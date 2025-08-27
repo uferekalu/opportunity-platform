@@ -60,7 +60,7 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersProps> = ({
       ...filters,
       search: debouncedSearch
     });
-  }, [debouncedSearch, filters, onFiltersChange]);
+  }, [debouncedSearch]);
 
   const handleCategoryChange = (category: string) => {
     onFiltersChange({

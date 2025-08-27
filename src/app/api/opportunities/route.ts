@@ -14,7 +14,7 @@ const mockOpportunities: Opportunity[] = [
     type: 'job',
     category: 'Technology',
     tags: ['React', 'Node.js', 'TypeScript', 'AWS', 'GraphQL'],
-    url: 'https://techcorp.com/careers/senior-fullstack-dev',
+    // url: 'https://techcorp.com/careers/senior-fullstack-dev',
     salary: {
       min: 120000,
       max: 180000,
@@ -36,7 +36,7 @@ const mockOpportunities: Opportunity[] = [
     type: 'internship',
     category: 'Design',
     tags: ['Figma', 'Adobe Creative Suite', 'User Research', 'Prototyping'],
-    url: 'https://designstudio.com/internships',
+    // url: 'https://designstudio.com/internships',
     deadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days from now
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
     updatedAt: new Date(),
