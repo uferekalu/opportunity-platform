@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { ApiResponse, NewsletterSubscriber, Opportunity, Subscription, WaitlistFormData } from '@/types';
 
 // Webhook event schema
 const webhookEventSchema = z.object({
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Invalid webhook payload',
-          details: error.errors
+          details: error.issues
         },
         { status: 400 }
       );
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Event handlers
-async function handleWaitlistSignup(data: any) {
+async function handleWaitlistSignup(data: WaitlistFormData) {
   console.log('Processing waitlist signup:', data);
   
   // Example automations:
@@ -116,7 +117,7 @@ async function handleWaitlistSignup(data: any) {
   // - Google Sheets for tracking
 }
 
-async function handleNewsletterSubscribe(data: any) {
+async function handleNewsletterSubscribe(data: NewsletterSubscriber) {
   console.log('Processing newsletter subscription:', data);
   
   // Example automations:
@@ -128,7 +129,7 @@ async function handleNewsletterSubscribe(data: any) {
   await new Promise(resolve => setTimeout(resolve, 100));
 }
 
-async function handleOpportunityCreated(data: any) {
+async function handleOpportunityCreated(data: Opportunity) {
   console.log('Processing opportunity created:', data);
   
   // Example automations:
@@ -140,7 +141,7 @@ async function handleOpportunityCreated(data: any) {
   await new Promise(resolve => setTimeout(resolve, 100));
 }
 
-async function handlePaymentSuccess(data: any) {
+async function handlePaymentSuccess(data: Subscription) {
   console.log('Processing payment success:', data);
   
   // Example automations:

@@ -5,7 +5,7 @@ import Stripe from 'stripe';
 
 // Initialize Stripe
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20', // Use the latest API version
+  apiVersion: '2025-07-30.basil', // Use the latest API version
 }) : null;
 
 const checkoutSchema = z.object({
@@ -13,7 +13,7 @@ const checkoutSchema = z.object({
   successUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
   customerEmail: z.string().email().optional(),
-  metadata: z.record(z.string()).optional()
+  metadata: z.record(z.string(), z.string()).optional()
 });
 
 // Mock payment plans (replace with database in production)
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Invalid checkout data',
-          details: error.errors
+          details: error.issues
         },
         { status: 400 }
       );

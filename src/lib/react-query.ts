@@ -5,9 +5,10 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
       gcTime: 1000 * 60 * 10, // 10 minutes
-      retry: (failureCount, error: any) => {
+      retry: (failureCount, error) => {
         // Don't retry on 4xx errors except 429
-        if (error?.status >= 400 && error?.status < 500 && error?.status !== 429) {
+        const status = (error as any)?.status ?? (error as any)?.response?.status;
+        if (typeof status === 'number' && status >= 400 && status < 500 && status !== 429) {
           return false;
         }
         return failureCount < 3;
@@ -15,9 +16,10 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
     mutations: {
-      retry: (failureCount, error: any) => {
+      retry: (failureCount, error) => {
         // Don't retry mutations on client errors
-        if (error?.status >= 400 && error?.status < 500) {
+        const status = (error as any)?.status ?? (error as any)?.response?.status;
+        if (typeof status === 'number' && status >= 400 && status < 500) {
           return false;
         }
         return failureCount < 2;

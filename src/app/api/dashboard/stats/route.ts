@@ -8,8 +8,8 @@ const getDashboardStats = async (): Promise<DashboardStats> => {
   await new Promise(resolve => setTimeout(resolve, 100));
   
   // Calculate stats based on current date
-  const now = new Date();
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  // const now = new Date();
+  // const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   
   return {
     totalOpportunities: 247,

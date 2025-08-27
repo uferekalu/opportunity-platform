@@ -123,7 +123,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (persistedUser) {
       dispatch({ type: 'SET_USER', payload: persistedUser });
     }
-    
+
     if (persistedTheme) {
       dispatch({ type: 'SET_THEME', payload: persistedTheme });
     }
@@ -145,7 +145,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Persist theme to localStorage
   useEffect(() => {
     storage.set('theme', state.theme);
-    
+
     // Apply theme to document
     const root = document.documentElement;
     if (state.theme === 'dark') {
@@ -192,10 +192,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
 };
 
-export const useApp = (): AppContextType => {
+export function useApp(): AppContextType {
   const context = useContext(AppContext);
   if (context === undefined) {
     throw new Error('useApp must be used within an AppProvider');
   }
   return context;
-};
+}

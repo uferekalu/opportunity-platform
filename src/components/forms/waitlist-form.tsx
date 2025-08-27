@@ -92,9 +92,12 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
       } else {
         toast.error(result.error || 'Failed to join waitlist. Please try again.');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Waitlist signup error:', error);
-      toast.error(error.message || 'An unexpected error occurred. Please try again.');
+      const errorMessage = typeof error === 'object' && error !== null && 'message' in error
+        ? (error as { message?: string }).message
+        : undefined;
+      toast.error(errorMessage || 'An unexpected error occurred. Please try again.');
     }
   };
 

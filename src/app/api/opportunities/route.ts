@@ -137,8 +137,8 @@ for (let i = 0; i < 15; i++) {
 }
 
 const querySchema = z.object({
-  page: z.string().transform(Number).default('1'),
-  limit: z.string().transform(Number).default('10'),
+  page: z.string().transform(Number).default(1),
+  limit: z.string().transform(Number).default(10),
   category: z.string().optional(),
   type: z.string().optional(),
   location: z.string().optional(),
@@ -219,7 +219,7 @@ export async function GET(request: NextRequest) {
         {
           success: false,
           error: 'Invalid query parameters',
-          details: error.errors
+          details: error.issues
         },
         { status: 400 }
       );
@@ -285,7 +285,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Invalid opportunity data',
-          details: error.errors
+          details: error.issues
         },
         { status: 400 }
       );

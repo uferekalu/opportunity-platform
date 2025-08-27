@@ -65,6 +65,7 @@ export interface DashboardFilters {
     start: Date;
     end: Date;
   };
+  search?: string;
 }
 
 // Newsletter Types
@@ -195,4 +196,15 @@ export interface EnvConfig {
   NEXTAUTH_SECRET?: string;
   ZAPIER_WEBHOOK_SECRET?: string;
   MAKE_WEBHOOK_SECRET?: string;
+}
+
+export interface SubscriptionType {
+  id: number | string;
+  email: string;
+  name: string | undefined;
+  provider: "flodesk" | "beehiiv" | "substack";
+  tags: string[];
+  status: string;
+  subscribedAt: Date;
+  source: string;
 }

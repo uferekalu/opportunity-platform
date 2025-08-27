@@ -1,8 +1,9 @@
+import { WaitlistEntry } from '@/types';
 import { NextResponse } from 'next/server';
 
 // In-memory storage (should match the one in waitlist/route.ts)
 // In a real app, this would be a shared database
-let waitlistEntries: any[] = [];
+let waitlistEntries: WaitlistEntry[] = [];
 
 export async function GET() {
   return NextResponse.json({

@@ -15,7 +15,7 @@ import { Mail, Check } from 'lucide-react';
 const newsletterSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   name: z.string().optional(),
-  provider: z.enum(['substack', 'flodesk', 'beehiiv']).default('substack'),
+  provider: z.enum(['substack', 'flodesk', 'beehiiv']),
 });
 
 type NewsletterFormData = z.infer<typeof newsletterSchema>;
@@ -100,7 +100,7 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({
       const result = await newsletterMutation.mutateAsync({
         ...data,
         provider: selectedProvider
-      });
+      } as NewsletterFormData);
       
       if (result.success) {
         setIsSubmitted(true);
@@ -110,9 +110,12 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({
       } else {
         toast.error(result.error || 'Failed to subscribe. Please try again.');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Newsletter signup error:', error);
-      toast.error(error.message || 'An unexpected error occurred. Please try again.');
+      const errorMessage = typeof error === 'object' && error !== null && 'message' in error
+        ? (error as { message?: string }).message
+        : undefined;
+      toast.error(errorMessage || 'An unexpected error occurred. Please try again.');
     }
   };
 

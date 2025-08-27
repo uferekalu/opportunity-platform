@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { WaitlistFormData, WaitlistEntry, Opportunity, ApiResponse, PaginatedResponse, DashboardStats } from '@/types';
+import { WaitlistFormData, WaitlistEntry, Opportunity, ApiResponse, PaginatedResponse, DashboardStats, User, WebhookEvent } from '@/types';
 import { useApp } from '@/context/app-context';
 import axios from 'axios';
 
@@ -152,10 +152,10 @@ export const useNewsletterSignup = () => {
 export const useUser = () => {
   const { state } = useApp();
   
-  return useQuery<ApiResponse<any>>({
+  return useQuery<ApiResponse<User>>({
     queryKey: queryKeys.user,
     queryFn: async () => {
-      const response = await api.get<ApiResponse<any>>('/user/profile');
+      const response = await api.get<ApiResponse<User>>('/user/profile');
       return response.data;
     },
     enabled: state.isAuthenticated,
@@ -166,9 +166,9 @@ export const useUpdateUser = () => {
   const { actions } = useApp();
   const queryClient = useQueryClient();
 
-  return useMutation<ApiResponse<any>, Error, Partial<any>>({
+  return useMutation<ApiResponse<User>, Error, Partial<User>>({
     mutationFn: async (data) => {
-      const response = await api.patch<ApiResponse<any>>('/user/profile', data);
+      const response = await api.patch<ApiResponse<User>>('/user/profile', data);
       return response.data;
     },
     onSuccess: (response) => {
@@ -186,9 +186,14 @@ export const useUpdateUser = () => {
 
 // Webhook hooks for automations
 export const useTriggerWebhook = () => {
-  return useMutation<ApiResponse<any>, Error, { type: string; payload: any }>({
-    mutationFn: async (data) => {
-      const response = await api.post<ApiResponse<any>>('/webhooks/trigger', data);
+  interface TriggerWebhookPayload {
+    type: string;
+    payload: Record<string, any>;
+  }
+
+  return useMutation<ApiResponse<WebhookEvent>, Error, TriggerWebhookPayload>({
+    mutationFn: async (data: TriggerWebhookPayload) => {
+      const response = await api.post<ApiResponse<WebhookEvent>>('/webhooks/trigger', data);
       return response.data;
     },
   });

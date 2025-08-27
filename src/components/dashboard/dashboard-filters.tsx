@@ -58,9 +58,9 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersProps> = ({
   React.useEffect(() => {
     onFiltersChange({
       ...filters,
-      // Add search to filters when implemented
+      search: debouncedSearch
     });
-  }, [debouncedSearch]);
+  }, [debouncedSearch, filters, onFiltersChange]);
 
   const handleCategoryChange = (category: string) => {
     onFiltersChange({
