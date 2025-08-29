@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 
 export async function middleware(request: NextRequest) {
   console.log('Middleware triggered for:', request.nextUrl.pathname);
   const token = request.cookies.get('token')?.value;
-  console.log('Token:', token);
+  console.log('Token:', token ? 'Present' : 'Missing');
 
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     if (!token) {
@@ -13,7 +13,8 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      jwt.verify(token, process.env.JWT_SECRET!);
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+      await jwtVerify(token, secret);  // Edge-compatible verification
       console.log('Token verified, proceeding');
       return NextResponse.next();
     } catch (error) {

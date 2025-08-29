@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
@@ -14,13 +14,14 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Verify JWT
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string; email: string };
+        // Edge-compatible JWT verification
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+        const { payload: decoded } = await jwtVerify(token, secret);
 
         // Fetch user from MongoDB
         const db = await connectToDatabase();
         const usersCollection = db.collection('users');
-        const user = await usersCollection.findOne({ _id: new ObjectId(decoded.userId) });
+        const user = await usersCollection.findOne({ _id: new ObjectId(decoded.userId as string) });
 
         if (!user) {
             return NextResponse.json(

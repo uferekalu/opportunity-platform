@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { SignJWT } from 'jose';
 
 export async function POST(request: NextRequest) {
     try {
@@ -33,11 +33,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const token = jwt.sign(
-            { userId: user._id.toString(), email: user.email },
-            process.env.JWT_SECRET!,
-            { expiresIn: '7d' }
-        );
+        // Edge-compatible JWT signing
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+        const token = await new SignJWT({ userId: user._id.toString(), email: user.email })
+            .setProtectedHeader({ alg: 'HS256' })
+            .setExpirationTime('7d')
+            .sign(secret);
 
         const response = NextResponse.json({
             success: true,
