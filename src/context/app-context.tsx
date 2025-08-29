@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { User, WaitlistEntry, Opportunity } from '@/types';
 import { storage } from '@/utils';
+import axios from 'axios';
 
 interface AppState {
   user: User | null;
@@ -114,15 +115,29 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Load persisted state on mount
+  // Load and verify authentication state on mount
   useEffect(() => {
-    const persistedUser = storage.get<User>('user');
+    const verifyAuth = async () => {
+      try {
+        // Call an API to verify the token
+        const response = await axios.get('/api/auth/verify', { withCredentials: true });
+        if (response.data.success && response.data.user) {
+          dispatch({ type: 'SET_USER', payload: response.data.user });
+          storage.set('user', response.data.user);
+        } else {
+          dispatch({ type: 'SET_USER', payload: null });
+          storage.remove('user');
+        }
+      } catch (error) {
+        dispatch({ type: 'SET_USER', payload: null });
+        storage.remove('user');
+      }
+    };
+
+    verifyAuth();
+
     const persistedTheme = storage.get<'light' | 'dark' | 'system'>('theme', 'system');
     const persistedWaitlistEntry = storage.get<WaitlistEntry>('waitlistEntry');
-
-    if (persistedUser) {
-      dispatch({ type: 'SET_USER', payload: persistedUser });
-    }
 
     if (persistedTheme) {
       dispatch({ type: 'SET_THEME', payload: persistedTheme });

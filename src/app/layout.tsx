@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from './providers';
 import "./globals.css";
+import Header from "@/components/header";
+import Footer from "@/components/ui/sections/footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,12 +34,14 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body
-        className={`${inter.variable} font-sans antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}
+        className={`${inter.variable} min-h-screen flex flex-col font-sans antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}
       >
         <Providers>
+          <Header />
           <div className="min-h-screen flex flex-col">
             {children}
           </div>
+          <Footer />
         </Providers>
       </body>
     </html>
