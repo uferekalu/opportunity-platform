@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import { Button } from './ui/button';
 import { useApp } from '@/context/app-context';
 import axios from 'axios';
@@ -24,12 +25,13 @@ export default function Header() {
 
     const handleLogout = async () => {
         try {
-            await axios.post('/api/auth/logout');
+            await axios.post('/api/auth/logout', {}, { withCredentials: true });
+            await signOut({ redirect: false });
             actions.setUser(null);
             actions.setAuthenticated(false);
             storage.remove('user'); // Clear localStorage
             toast.success('Logged out successfully');
-            router.push('/auth');
+            window.location.href = '/auth';
         } catch (error) {
             toast.error('Failed to log out');
         }

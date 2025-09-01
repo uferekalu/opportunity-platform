@@ -119,18 +119,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        // Call an API to verify the token
+        dispatch({ type: 'SET_LOADING', payload: true });
         const response = await axios.get('/api/auth/verify', { withCredentials: true });
         if (response.data.success && response.data.user) {
           dispatch({ type: 'SET_USER', payload: response.data.user });
+          dispatch({ type: 'SET_AUTHENTICATED', payload: true });
           storage.set('user', response.data.user);
         } else {
           dispatch({ type: 'SET_USER', payload: null });
+          dispatch({ type: 'SET_AUTHENTICATED', payload: false });
           storage.remove('user');
         }
       } catch (error) {
         dispatch({ type: 'SET_USER', payload: null });
+        dispatch({ type: 'SET_AUTHENTICATED', payload: false });
         storage.remove('user');
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
 
@@ -213,4 +218,4 @@ export function useApp(): AppContextType {
     throw new Error('useApp must be used within an AppProvider');
   }
   return context;
-}
+};

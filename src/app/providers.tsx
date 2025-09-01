@@ -5,34 +5,37 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
 import { AppProvider } from '@/context/app-context';
 import { queryClient } from '@/lib/react-query';
+import { SessionProvider } from 'next-auth/react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppProvider>
-        {children}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: 'var(--toast-bg, #363636)',
-              color: 'var(--toast-color, #fff)',
-            },
-            success: {
+    <SessionProvider>
+      <QueryClientProvider client={queryClient}>
+        <AppProvider>
+          {children}
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
               style: {
-                background: 'var(--toast-success-bg, #10b981)',
+                background: 'var(--toast-bg, #363636)',
+                color: 'var(--toast-color, #fff)',
               },
-            },
-            error: {
-              style: {
-                background: 'var(--toast-error-bg, #ef4444)',
+              success: {
+                style: {
+                  background: 'var(--toast-success-bg, #10b981)',
+                },
               },
-            },
-          }}
-        />
-        <ReactQueryDevtools initialIsOpen={false} />
-      </AppProvider>
-    </QueryClientProvider>
+              error: {
+                style: {
+                  background: 'var(--toast-error-bg, #ef4444)',
+                },
+              },
+            }}
+          />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </AppProvider>
+      </QueryClientProvider>
+    </SessionProvider>
   );
 }

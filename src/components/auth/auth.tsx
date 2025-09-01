@@ -6,12 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/app-context';
 import { toast } from 'react-hot-toast';
 import { cn } from '@/utils';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { signIn } from 'next-auth/react';
 import axios from 'axios';
 
 // Zod schema for form validation
@@ -41,12 +42,19 @@ export default function Auth() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { state, actions } = useApp();
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         if (state.isAuthenticated) {
-            router.replace('/dashboard')
+            router.replace('/dashboard');
         }
-    }, [state.isAuthenticated, router])
+
+        // Check for Google sign-in error (email conflict)
+        const error = searchParams.get('error');
+        if (error === 'AccessDenied') {
+            toast.error('This email is registered with a password. Please use email/password to sign in.');
+        }
+    }, [state.isAuthenticated, router, searchParams]);
 
     const {
         register,
@@ -62,9 +70,15 @@ export default function Auth() {
         reset();
     };
 
-    const handleGoogleSignIn = () => {
-        toast.success('Google sign-in coming soon!');
-        // Placeholder for Google OAuth implementation
+    const handleGoogleSignIn = async () => {
+        try {
+            await signIn('google', {
+                callbackUrl: '/dashboard',
+                redirect: true,
+            });
+        } catch (error) {
+            toast.error('Failed to sign in with Google. Please try again.');
+        }
     };
 
     const onSubmit = async (data: SignInFormData | SignUpFormData) => {

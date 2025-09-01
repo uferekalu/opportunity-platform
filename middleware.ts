@@ -1,31 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { SignJWT } from 'jose';
+import { connectToDatabase } from '@/lib/mongodb';
 
 export async function middleware(request: NextRequest) {
-  console.log('Middleware triggered for:', request.nextUrl.pathname);
-  const token = request.cookies.get('token')?.value;
-  console.log('Token:', token ? 'Present' : 'Missing');
+  const { pathname } = request.nextUrl;
 
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    if (!token) {
-      console.log('No token, redirecting to /auth');
-      return NextResponse.redirect(new URL('/auth', request.url));
+  // Intercept the Google OAuth callback
+  if (pathname.startsWith('/api/auth/callback/google')) {
+    const response = NextResponse.next();
+
+    // Get the user email from the query parameters or session
+    const email = request.nextUrl.searchParams.get('email') || request.cookies.get('next-auth.session-token')?.value;
+
+    if (email) {
+      // Connect to MongoDB to fetch user
+      const db = await connectToDatabase();
+      const usersCollection = db.collection('users');
+      const user = await usersCollection.findOne({ email });
+
+      if (user) {
+        // Generate JWT
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+        const jwt = await new SignJWT({
+          userId: user._id.toString(),
+          email: user.email,
+        })
+          .setProtectedHeader({ alg: 'HS256' })
+          .setExpirationTime('7d')
+          .sign(secret);
+
+        // Set the token cookie
+        response.cookies.set('token', jwt, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+          path: '/',
+        });
+      }
     }
 
-    try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-      await jwtVerify(token, secret);  // Edge-compatible verification
-      console.log('Token verified, proceeding');
-      return NextResponse.next();
-    } catch (error) {
-      console.log('Token verification failed:', error);
-      return NextResponse.redirect(new URL('/auth', request.url));
-    }
+    return response;
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/api/auth/callback/google'],
 };
