@@ -25,17 +25,17 @@ export default function Header() {
 
     const handleLogout = async () => {
         try {
-            await axios.post('/api/auth/logout', {}, { withCredentials: true });
-            await signOut({ redirect: false });
+            await axios.post('/api/auth/logout');
+            await signOut({ callbackUrl: '/auth' }); // ✅ force redirect to /auth
             actions.setUser(null);
             actions.setAuthenticated(false);
-            storage.remove('user'); // Clear localStorage
+            storage.remove('user');
             toast.success('Logged out successfully');
-            window.location.href = '/auth';
         } catch (error) {
             toast.error('Failed to log out');
         }
     };
+
 
     return (
         <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 dark:bg-gray-900/80 dark:border-gray-800">

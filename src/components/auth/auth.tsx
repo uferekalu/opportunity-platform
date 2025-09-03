@@ -77,6 +77,7 @@ export default function Auth() {
                 redirect: true,
             });
         } catch (error) {
+            console.error(error)
             toast.error('Failed to sign in with Google. Please try again.');
         }
     };
