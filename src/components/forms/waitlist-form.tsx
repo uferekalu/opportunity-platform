@@ -34,7 +34,7 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
   showReferralSource = false,
   onSuccess,
 }) => {
-  const { state } = useApp();
+  const { state, actions } = useApp();
   const waitlistMutation = useWaitlistSignup();
   const { data: statsData } = useWaitlistStats();
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -51,18 +51,18 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
   // Show success state if user already joined
   if (state.waitlistEntry || isSubmitted) {
     return (
-      <div className={cn(
-        'bg-green-50 border border-green-200 rounded-lg p-6 text-center dark:bg-green-900/20 dark:border-green-800',
-        className
-      )}>
+      <div
+        className={cn(
+          'bg-green-50 border border-green-200 rounded-lg p-6 text-center dark:bg-green-900/20 dark:border-green-800',
+          className
+        )}
+      >
         <div className="w-12 h-12 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center dark:bg-green-800">
           <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
-          You're on the waitlist!
-        </h3>
+        <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">You're on the waitlist!</h3>
         <p className="text-green-700 dark:text-green-300 mb-4">
           Thank you for joining. We'll notify you as soon as we launch.
         </p>
@@ -83,21 +83,20 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
   const onSubmit = async (data: WaitlistFormData) => {
     try {
       const result = await waitlistMutation.mutateAsync(data);
-      
       if (result.success) {
         setIsSubmitted(true);
         toast.success('Successfully joined the waitlist!');
         reset();
+        actions.clearError();
         onSuccess?.();
       } else {
         toast.error(result.error || 'Failed to join waitlist. Please try again.');
+        actions.setError(result.error || 'Failed to join waitlist');
       }
-    } catch (error) {
-      console.error('Waitlist signup error:', error);
-      const errorMessage = typeof error === 'object' && error !== null && 'message' in error
-        ? (error as { message?: string }).message
-        : undefined;
-      toast.error(errorMessage || 'An unexpected error occurred. Please try again.');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'An unexpected error occurred. Please try again.';
+      toast.error(errorMessage);
+      actions.setError(errorMessage);
     }
   };
 
@@ -105,17 +104,18 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
   const isModal = variant === 'modal';
 
   return (
-    <div className={cn(
-      'w-full',
-      !isInline && 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm',
-      isModal && 'max-w-md mx-auto',
-      className
-    )}>
+    <div
+      className={cn(
+        'w-full',
+        !isInline && 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm',
+        isModal && 'max-w-md mx-auto',
+        className
+      )}
+    >
       <div className="mb-6 text-center">
-        <h2 className={cn(
-          'font-bold text-gray-900 dark:text-white mb-2',
-          isInline ? 'text-xl' : 'text-2xl'
-        )}>
+        <h2
+          className={cn('font-bold text-gray-900 dark:text-white mb-2', isInline ? 'text-xl' : 'text-2xl')}
+        >
           Join the Waitlist
         </h2>
         <p className="text-gray-600 dark:text-gray-300 text-sm">
@@ -129,9 +129,7 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className={cn(
-          isInline && 'flex gap-3 items-end'
-        )}>
+        <div className={cn(isInline && 'flex gap-3 items-end')}>
           <div className={cn(isInline && 'flex-1')}>
             <Input
               {...register('email')}
@@ -143,7 +141,7 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
               className={isInline ? 'mb-0' : ''}
             />
           </div>
-          
+
           {isInline && (
             <Button
               type="submit"

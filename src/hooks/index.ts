@@ -47,7 +47,7 @@ export const useWaitlistStats = () => {
   return useQuery<ApiResponse<{ total: number; position?: number }>>({
     queryKey: queryKeys.waitlist,
     queryFn: async () => {
-      const response = await api.get<ApiResponse<{ total: number; position?: number }>>('/waitlist/stats');
+      const response = await api.get<ApiResponse<{ total: number; position?: number }>>('/waitlist');
       return response.data;
     },
   });

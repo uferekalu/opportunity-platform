@@ -14,6 +14,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { signIn } from 'next-auth/react';
 import axios from 'axios';
+import ForgotPassword from './forgot-password';
 
 // Zod schema for form validation
 const signInSchema = z.object({
@@ -40,6 +41,7 @@ export default function Auth() {
     const [isSignUp, setIsSignUp] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
     const { state, actions } = useApp();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -67,6 +69,7 @@ export default function Auth() {
 
     const handleSwitchMode = () => {
         setIsSignUp(!isSignUp);
+        setShowForgotPassword(false);
         reset();
     };
 
@@ -77,7 +80,7 @@ export default function Auth() {
                 redirect: true,
             });
         } catch (error) {
-            console.error(error)
+            console.error(error);
             toast.error('Failed to sign in with Google. Please try again.');
         }
     };
@@ -109,6 +112,10 @@ export default function Auth() {
         }
     };
 
+    if (showForgotPassword) {
+        return <ForgotPassword onBack={() => setShowForgotPassword(false)} />;
+    }
+
     return (
         <AnimatePresence>
             <motion.div
@@ -116,7 +123,7 @@ export default function Auth() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="flex items-center justify-center"
+                className="flex items-center justify-center min-h-screen"
             >
                 <motion.div
                     initial={{ scale: 0.7, opacity: 0, y: 50 }}
@@ -224,6 +231,18 @@ export default function Auth() {
                                     <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
                                 )}
                             </div>
+                        )}
+                        {!isSignUp && (
+                            <p className="text-sm text-right">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowForgotPassword(true)}
+                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                                    disabled={isSubmitting}
+                                >
+                                    Forgot Password?
+                                </button>
+                            </p>
                         )}
                         <Button
                             type="submit"

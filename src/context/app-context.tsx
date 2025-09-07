@@ -107,6 +107,7 @@ interface AppContextType {
     setError: (error: string | null) => void;
     clearError: () => void;
     resetState: () => void;
+    verifyWaitlist: () => Promise<void>;
   };
 }
 
@@ -115,7 +116,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Load and verify authentication state on mount
+  // Load and verify authentication and waitlist status on mount
   useEffect(() => {
     const verifyAuth = async () => {
       try {
@@ -139,17 +140,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
 
+    const verifyWaitlist = async () => {
+      try {
+        const persistedWaitlistEntry = storage.get<WaitlistEntry>('waitlistEntry');
+        if (persistedWaitlistEntry && persistedWaitlistEntry.email) {
+          dispatch({ type: 'SET_LOADING', payload: true });
+          const response = await axios.get(`/api/waitlist?email=${encodeURIComponent(persistedWaitlistEntry.email)}`, {
+            withCredentials: true,
+          });
+          if (response.data.success && response.data.data.entry) {
+            dispatch({ type: 'SET_WAITLIST_ENTRY', payload: response.data.data.entry });
+          } else {
+            dispatch({ type: 'SET_WAITLIST_ENTRY', payload: null });
+            storage.remove('waitlistEntry');
+          }
+        }
+      } catch (error) {
+        dispatch({ type: 'SET_WAITLIST_ENTRY', payload: null });
+        storage.remove('waitlistEntry');
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
+    };
+
     verifyAuth();
+    verifyWaitlist();
 
     const persistedTheme = storage.get<'light' | 'dark' | 'system'>('theme', 'system');
-    const persistedWaitlistEntry = storage.get<WaitlistEntry>('waitlistEntry');
-
     if (persistedTheme) {
       dispatch({ type: 'SET_THEME', payload: persistedTheme });
-    }
-
-    if (persistedWaitlistEntry) {
-      dispatch({ type: 'SET_WAITLIST_ENTRY', payload: persistedWaitlistEntry });
     }
   }, []);
 
@@ -183,7 +202,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [state.theme]);
 
-  // Persist waitlist entry
+  // Persist waitlist entry to localStorage
   useEffect(() => {
     if (state.waitlistEntry) {
       storage.set('waitlistEntry', state.waitlistEntry);
@@ -203,6 +222,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setError: (error: string | null) => dispatch({ type: 'SET_ERROR', payload: error }),
     clearError: () => dispatch({ type: 'CLEAR_ERROR' }),
     resetState: () => dispatch({ type: 'RESET_STATE' }),
+    verifyWaitlist: async () => {
+      try {
+        const persistedWaitlistEntry = storage.get<WaitlistEntry>('waitlistEntry');
+        if (persistedWaitlistEntry && persistedWaitlistEntry.email) {
+          dispatch({ type: 'SET_LOADING', payload: true });
+          const response = await axios.get(`/api/waitlist?email=${encodeURIComponent(persistedWaitlistEntry.email)}`, {
+            withCredentials: true,
+          });
+          if (response.data.success && response.data.data.entry) {
+            dispatch({ type: 'SET_WAITLIST_ENTRY', payload: response.data.data.entry });
+          } else {
+            dispatch({ type: 'SET_WAITLIST_ENTRY', payload: null });
+            storage.remove('waitlistEntry');
+          }
+        }
+      } catch (error) {
+        dispatch({ type: 'SET_WAITLIST_ENTRY', payload: null });
+        storage.remove('waitlistEntry');
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
+    },
   };
 
   return (
@@ -218,4 +259,4 @@ export function useApp(): AppContextType {
     throw new Error('useApp must be used within an AppProvider');
   }
   return context;
-};
+}
