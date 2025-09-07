@@ -151,7 +151,7 @@ export const useNewsletterSignup = () => {
 // User hooks
 export const useUser = () => {
   const { state } = useApp();
-  
+
   return useQuery<ApiResponse<User>>({
     queryKey: queryKeys.user,
     queryFn: async () => {
@@ -180,6 +180,31 @@ export const useUpdateUser = () => {
     onError: (error) => {
       console.error('Update user failed:', error);
       actions.setError(error.message || 'Failed to update profile');
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  const { actions } = useApp();
+  return useMutation<ApiResponse<{ success: boolean }>, Error, { token: string; password: string }>({
+    mutationFn: async (data) => {
+      const response = await api.post<ApiResponse<{ success: boolean }>>('/api/auth/reset-password', data);
+      return response.data;
+    },
+    onSuccess: (response) => {
+      if (response.success) {
+        actions.clearError();
+        toast.success('Password reset successfully! Please sign in with your new password.');
+      } else {
+        actions.setError(response.error || 'Failed to reset password');
+        toast.error(response.error || 'Failed to reset password');
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error.message || 'Failed to reset password';
+      console.error('Reset password failed:', error);
+      actions.setError(errorMessage);
+      toast.error(errorMessage);
     },
   });
 };
@@ -260,4 +285,5 @@ export const useMediaQuery = (query: string): boolean => {
 };
 
 // Import React for hooks
-import React from 'react';
+import React from 'react';import toast from 'react-hot-toast';
+
